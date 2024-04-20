@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.it120p</groupId>
-	<artifactId>library-management-system</artifactId>
+	<artifactId>lms-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>library-management-system</name>
+	<name>lms-backend</name>
 	<description>Backend for a Library Management System created with ReactJS and Springboot.</description>
 	<properties>
 		<java.version>22</java.version>
