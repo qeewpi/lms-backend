@@ -19,6 +19,11 @@ public class UserController {
         return userRepository.save(newUser);
     }
 
+    @PostMapping("/users")
+    List<User> newUsers(@RequestBody List<User> newUsers) {
+        return userRepository.saveAll(newUsers);
+    }
+
     @GetMapping("/users")
     List<User> getAllUsers() {
         return userRepository.findAll();
