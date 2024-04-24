@@ -1,6 +1,7 @@
 package com.it120p.librarymanagementsystem.model;
 
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.util.Date;
 
@@ -13,9 +14,11 @@ public class Admin {
     private String name;
     private String username;
     private String password;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "date_created", nullable = false, updatable = false)
-    private Date dateCreated;
+    @CreatedDate
+    private Date created_at;
 
     public Long getId() {
         return id;
@@ -49,11 +52,11 @@ public class Admin {
         this.password = password;
     }
 
-    public Date getDateCreated() {
-        return dateCreated;
+    public Date getCreated_at() {
+        return created_at;
     }
 
-    public void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
+    public void setCreated_at(Date created_at) {
+        this.created_at = created_at;
     }
 }

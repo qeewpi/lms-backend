@@ -1,10 +1,19 @@
 package com.it120p.librarymanagementsystem.controller;
 
+import com.it120p.librarymanagementsystem.exception.BookNotFoundException;
 import com.it120p.librarymanagementsystem.exception.OrderNotFoundException;
+import com.it120p.librarymanagementsystem.exception.UserNotFoundException;
+import com.it120p.librarymanagementsystem.model.Book;
 import com.it120p.librarymanagementsystem.model.Order;
+import com.it120p.librarymanagementsystem.model.User;
+import com.it120p.librarymanagementsystem.repository.BookRepository;
 import com.it120p.librarymanagementsystem.repository.OrderRepository;
+import com.it120p.librarymanagementsystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin("http://localhost:3000")
@@ -13,8 +22,25 @@ public class OrderController {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private BookRepository bookRepository;
+
     @PostMapping("/order")
-    Order newOrder(@RequestBody Order newOrder) {return orderRepository.save(newOrder);
+    Order newOrder(@RequestBody Order newOrder) {
+        User user = userRepository.findById(newOrder.getUser().getId())
+                .orElseThrow(() -> new UserNotFoundException(newOrder.getUser().getId()));
+
+        List<Book> books = newOrder.getBooks().stream()
+                .map(book -> bookRepository.findById(book.getId())
+                        .orElseThrow(() -> new BookNotFoundException(book.getId())))
+                .collect(Collectors.toList());
+
+        newOrder.setBooks(books);
+        newOrder.setUser(user);
+        return orderRepository.save(newOrder);
     }
 
     @PostMapping("/orders")
@@ -36,11 +62,11 @@ public class OrderController {
     Order updateOrder(@RequestBody Order newOrder, @PathVariable Long id) {
         return orderRepository.findById(id)
                 .map(order -> {
-                    order.setOrder_date(newOrder.getOrder_date());
-                    order.setReturn_date(newOrder.getReturn_date());
-                    order.setDue_date(newOrder.getDue_date());
+                    order.setBooks(newOrder.getBooks());
                     order.setUser(newOrder.getUser());
-                    order.setBook(newOrder.getBook());
+                    order.setCreated_at(newOrder.getCreated_at());
+                    order.setBorrowed_at(newOrder.getBorrowed_at());
+
                     return orderRepository.save(order);
                 })
                 .orElseThrow(() -> new OrderNotFoundException(id));

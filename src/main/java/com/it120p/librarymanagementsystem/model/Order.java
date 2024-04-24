@@ -1,25 +1,43 @@
 package com.it120p.librarymanagementsystem.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
+@Table (name = "orders")
 public class Order {
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonBackReference
     private User user;
-    private Book book;
 
-    private Date order_date;
-    private Date return_date;
+    @ManyToMany
+    @JoinTable(
+            name = "order_books",
+            joinColumns = @JoinColumn(name = "order_id"),
+            inverseJoinColumns = @JoinColumn(name = "book_id")
+    )
+    private List<Book> books;
 
-    private Date due_date;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date created_at;
+
+    @PrePersist
+    protected void onCreate() {
+        created_at = new Date();
+    }
+
+    private Date borrowed_at;
+    private Date returned_at;
 
     public Long getId() {
         return id;
@@ -37,35 +55,35 @@ public class Order {
         this.user = user;
     }
 
-    public Book getBook() {
-        return book;
+    public List<Book> getBooks() {
+        return books;
     }
 
-    public void setBook(Book book) {
-        this.book = book;
+    public void setBooks(List<Book> books) {
+        this.books = books;
     }
 
-    public Date getOrder_date() {
-        return order_date;
+    public Date getCreated_at() {
+        return created_at;
     }
 
-    public void setOrder_date(Date order_date) {
-        this.order_date = order_date;
+    public void setCreated_at(Date created_at) {
+        this.created_at = created_at;
     }
 
-    public Date getReturn_date() {
-        return return_date;
+    public Date getBorrowed_at() {
+        return borrowed_at;
     }
 
-    public void setReturn_date(Date return_date) {
-        this.return_date = return_date;
+    public void setBorrowed_at(Date borrowed_at) {
+        this.borrowed_at = borrowed_at;
     }
 
-    public Date getDue_date() {
-        return due_date;
+    public Date getReturned_at() {
+        return returned_at;
     }
 
-    public void setDue_date(Date due_date) {
-        this.due_date = due_date;
+    public void setReturned_at(Date returned_at) {
+        this.returned_at = returned_at;
     }
 }
