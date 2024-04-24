@@ -5,6 +5,7 @@ import com.it120p.librarymanagementsystem.exception.OrderNotFoundException;
 import com.it120p.librarymanagementsystem.exception.UserNotFoundException;
 import com.it120p.librarymanagementsystem.model.Book;
 import com.it120p.librarymanagementsystem.model.Order;
+import com.it120p.librarymanagementsystem.model.OrderStatus;
 import com.it120p.librarymanagementsystem.model.User;
 import com.it120p.librarymanagementsystem.repository.BookRepository;
 import com.it120p.librarymanagementsystem.repository.OrderRepository;
@@ -12,6 +13,7 @@ import com.it120p.librarymanagementsystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,18 +60,41 @@ public class OrderController {
         return orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
     }
 
+    @GetMapping("/order/{orderId}/user")
+    public User getUserByOrderId(@PathVariable Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+        return order.getUser();
+    }
+
     @PutMapping("/order/{id}")
     Order updateOrder(@RequestBody Order newOrder, @PathVariable Long id) {
         return orderRepository.findById(id)
                 .map(order -> {
                     order.setBooks(newOrder.getBooks());
                     order.setUser(newOrder.getUser());
-                    order.setCreated_at(newOrder.getCreated_at());
                     order.setBorrowed_at(newOrder.getBorrowed_at());
+                    order.setReturned_at(newOrder.getReturned_at());
+
+                    // Check if the order is overdue
+                    if (order.isOverdue()) {
+                        order.setStatus(OrderStatus.OVERDUE);
+                    }
 
                     return orderRepository.save(order);
                 })
                 .orElseThrow(() -> new OrderNotFoundException(id));
+    }
+
+    @PutMapping("/order/return/{orderId}")
+    public Order returnOrder(@PathVariable Long orderId) {
+        return orderRepository.findById(orderId)
+                .map(order -> {
+                    order.setReturned_at(new Date());
+                    order.setStatus(OrderStatus.RETURNED);
+                    return orderRepository.save(order);
+                })
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
     }
 
     @DeleteMapping("/order/{id}")

@@ -3,22 +3,32 @@ package com.it120p.librarymanagementsystem.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
 
 @Entity
 @Table (name = "orders")
 public class Order {
+    @Setter
+    @Getter
     @Id
-    @GeneratedValue
+    @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
+    @Getter
     @ManyToOne
     @JoinColumn(name = "user_id")
     @JsonBackReference
     private User user;
 
+    @Setter
+    @Getter
     @ManyToMany
     @JoinTable(
             name = "order_books",
@@ -27,63 +37,51 @@ public class Order {
     )
     private List<Book> books;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Setter
+    @Getter
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
+
+    @Setter
+    @Getter
+    @Column(name = "borrowed_at", nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private Date created_at;
+    private Date borrowed_at;
 
     @PrePersist
     protected void onCreate() {
-        created_at = new Date();
+        borrowed_at = new Date();
+        status = OrderStatus.BORROWED;
     }
 
-    private Date borrowed_at;
+    @Getter
     private Date returned_at;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public List<Book> getBooks() {
-        return books;
-    }
-
-    public void setBooks(List<Book> books) {
-        this.books = books;
-    }
-
-    public Date getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(Date created_at) {
-        this.created_at = created_at;
-    }
-
-    public Date getBorrowed_at() {
-        return borrowed_at;
-    }
 
     public void setBorrowed_at(Date borrowed_at) {
         this.borrowed_at = borrowed_at;
-    }
 
-    public Date getReturned_at() {
-        return returned_at;
+        if (borrowed_at != null) {
+            this.status = OrderStatus.BORROWED;
+        }
     }
 
     public void setReturned_at(Date returned_at) {
         this.returned_at = returned_at;
+
+        if (returned_at != null) {
+            this.status = OrderStatus.RETURNED;
+        }
+    }
+
+    public boolean isOverdue() {
+        if (status != OrderStatus.BORROWED || borrowed_at == null) {
+            return false;
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(borrowed_at);
+        cal.add(Calendar.DAY_OF_MONTH, 14); // 14 days borrowing period
+
+        return new Date().after(cal.getTime());
     }
 }
