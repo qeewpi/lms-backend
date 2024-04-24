@@ -4,6 +4,7 @@ import com.it120p.librarymanagementsystem.exception.AdminNotFoundException;
 import com.it120p.librarymanagementsystem.model.Admin;
 import com.it120p.librarymanagementsystem.repository.AdminRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @RestController
 @CrossOrigin("http://localhost:3000")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     @Autowired

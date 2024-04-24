@@ -4,12 +4,14 @@ import com.it120p.librarymanagementsystem.exception.UserNotFoundException;
 import com.it120p.librarymanagementsystem.model.User;
 import com.it120p.librarymanagementsystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @CrossOrigin("http://localhost:3000")
+@PreAuthorize("hasRole('ADMIN')")
 public class UserController {
 
     @Autowired

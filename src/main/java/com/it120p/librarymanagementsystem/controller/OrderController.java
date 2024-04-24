@@ -74,6 +74,7 @@ public class OrderController {
                     order.setBooks(newOrder.getBooks());
                     order.setUser(newOrder.getUser());
                     order.setBorrowed_at(newOrder.getBorrowed_at());
+                    order.setDue_date(newOrder.getDue_date());
                     order.setReturned_at(newOrder.getReturned_at());
 
                     // Check if the order is overdue

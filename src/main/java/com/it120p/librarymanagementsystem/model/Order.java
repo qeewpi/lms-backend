@@ -52,7 +52,16 @@ public class Order {
     protected void onCreate() {
         borrowed_at = new Date();
         status = OrderStatus.BORROWED;
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(borrowed_at);
+        cal.add(Calendar.DAY_OF_MONTH, 7); // 7 days borrowing period
+        due_date = cal.getTime();
     }
+
+    @Setter
+    @Getter
+    private Date due_date;
 
     @Getter
     private Date returned_at;
@@ -78,10 +87,6 @@ public class Order {
             return false;
         }
 
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(borrowed_at);
-        cal.add(Calendar.DAY_OF_MONTH, 14); // 14 days borrowing period
-
-        return new Date().after(cal.getTime());
+        return new Date().after(due_date);
     }
 }
