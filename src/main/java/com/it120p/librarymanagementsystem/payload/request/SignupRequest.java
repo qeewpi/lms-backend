@@ -10,6 +10,16 @@ import java.util.Set;
 
 import jakarta.validation.constraints.*;
 
+/**
+ * The SignupRequest class is a model for the data required for a signup request.
+ * It is used to map the JSON object from the frontend to a Java object.
+ * It is needed to create a new user account.
+ * It contains fields for the username, name, email, role, and password.
+ * All fields are mandatory for a successful signup request.
+ * The username must be between 3 and 20 characters.
+ * The email must be a valid email format.
+ * The password must be between 6 and 40 characters.
+ */
 public class SignupRequest {
     @NotBlank
     @Size(min = 3, max = 20)

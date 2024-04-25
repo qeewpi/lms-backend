@@ -2,6 +2,19 @@ package com.it120p.librarymanagementsystem.payload.response;
 
 import java.util.List;
 
+/**
+ * The JwtResponse class is a model for the data returned after a successful authentication.
+ * It contains fields for the JWT token, token type, user's ID, username, name, email, and roles.
+ * It is necessary to return the JWT token to the client so that it can be stored and used for future requests.
+ *
+ * The token is the JWT token used for authentication.
+ * The type is the type of the token, which is "Bearer".
+ * The id is the unique identifier of the authenticated user.
+ * The username is the username of the authenticated user.
+ * The name is the name of the authenticated user.
+ * The email is the email of the authenticated user.
+ * The roles are the roles of the authenticated user.
+ */
 public class JwtResponse {
     private String token;
     private String type = "Bearer";
@@ -11,6 +24,18 @@ public class JwtResponse {
     private String email;
     private List<String> roles;
 
+    /**
+     * The JwtResponse class is a model for the data returned after a successful authentication.
+     * It contains fields for the JWT token, token type, user's ID, username, name, email, and roles.
+     *
+     * The token is the JWT token used for authentication.
+     * The type is the type of the token, which is "Bearer".
+     * The id is the unique identifier of the authenticated user.
+     * The username is the username of the authenticated user.
+     * The name is the name of the authenticated user.
+     * The email is the email of the authenticated user.
+     * The roles are the roles of the authenticated user.
+     */
     public JwtResponse(String accessToken, Long id, String username, String name, String email, List<String> roles) {
         this.token = accessToken;
         this.id = id;
