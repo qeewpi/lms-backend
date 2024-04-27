@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.it120p.librarymanagementsystem.security.services.impl.EmailServiceImpl;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +85,12 @@ public class AuthController {
      */
     @Autowired
     PasswordEncoder encoder;
+
+    /**
+     * EmailServiceImpl is a class which provides the sendSimpleMailMessage() method.
+     */
+    @Autowired
+    EmailServiceImpl emailServiceImpl;
 
     /**
      * JwtUtils is a class which provides the generateJwtToken() method.
@@ -184,6 +191,7 @@ public class AuthController {
         user.setRoles(roles);
         // Save the user to the database
         userRepository.save(user);
+        emailServiceImpl.sendSimpleMailMessage(user.getEmail(), "New User Account Created", "Your account has been created successfully!", user.getName());
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }

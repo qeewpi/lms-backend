@@ -3,6 +3,8 @@ package com.it120p.librarymanagementsystem.controller;
 import com.it120p.librarymanagementsystem.exception.UserNotFoundException;
 import com.it120p.librarymanagementsystem.model.User;
 import com.it120p.librarymanagementsystem.repository.UserRepository;
+import com.it120p.librarymanagementsystem.security.services.impl.EmailServiceImpl;
+import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
