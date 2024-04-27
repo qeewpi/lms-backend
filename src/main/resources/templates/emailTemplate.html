@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Summary</title>
+    <style>
+        /* External CSS for better organization and maintainability */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap'); /* Import Poppins font */
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f5f5; /* Light background color */
+        }
+
+        table {
+            width: 600px;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .order-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .order-id {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .order-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .order-details span {
+            font-weight: 500;
+        }
+
+        .order-summary-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .book-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .book-image {
+            width: 80px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-right: 20px;
+        }
+
+        .book-details {
+            flex-grow: 1;
+        }
+
+        .book-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .book-author {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .book-quantity {
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+<table>
+    <tr>
+        <td>
+            <div class="container">
+                <div class="order-header">
+                    <span class="order-id">ORDER #<span th:text="${orderId}"></span></span>
+                </div>
+
+                <div class="order-details">
+                    <div>
+                        <span class="text-primaryBlack font-bold">Order Status: </span>
+                        <span th:text="${order.status}"></span>
+                    </div>
+                    <div>
+                        <span class="text-primaryBlack font-bold">Order Date: </span>
+                        <span th:text="${order.borrowed_at}"></span>
+                    </div>
+                    <div>
+                        <span class="text-primaryBlack font-bold">Due Date: </span>
+                        <span th:text="${order.due_date}"></span>
+                    </div>
+                </div>
+
+                <div class="order-summary-title">
+                    <h1>Order Summary</h1>
+                </div>
+
+                <div th:each="book : ${books}">
+                    <div class="book-item">
+                        <img class="book-image" th:src="'data:image/png;base64,' + ${'image_' + book.id}" alt="Book Title"> <!-- Assuming image is attached with content ID "image" -->
+                        <div class="book-details">
+                            <h2 class="book-title" th:text="${book.title}"></h2>
+                            <p class="book-author" th:text="${book.author}"></p>
+                        </div>
+                        <div class="book-quantity">
+                            <p>Quantity: 1</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

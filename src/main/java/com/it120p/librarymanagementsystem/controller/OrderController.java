@@ -10,6 +10,7 @@ import com.it120p.librarymanagementsystem.model.User;
 import com.it120p.librarymanagementsystem.repository.BookRepository;
 import com.it120p.librarymanagementsystem.repository.OrderRepository;
 import com.it120p.librarymanagementsystem.repository.UserRepository;
+import com.it120p.librarymanagementsystem.security.services.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,6 +39,9 @@ public class OrderController {
 
     @Autowired
     private BookRepository bookRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     /**
      * Creates a new Order entity and saves it to the database.
@@ -69,7 +73,19 @@ public class OrderController {
         // Save the new order to the database
         newOrder.setBooks(books);
         newOrder.setUser(user);
-        return orderRepository.save(newOrder);
+
+        Order savedOrder = orderRepository.save(newOrder);
+
+        // Send an email to the user to confirm the order
+        emailService.sendHtmlEmail(
+                newOrder.getUser().getEmail(),
+                "Order Confirmation",
+                "Your order has been confirmed.",
+                newOrder.getUser().getName(),
+                newOrder
+        );
+        return savedOrder;
+
     }
 
     /**
