@@ -11,6 +11,11 @@ import com.it120p.librarymanagementsystem.repository.BookRepository;
 import com.it120p.librarymanagementsystem.repository.OrderRepository;
 import com.it120p.librarymanagementsystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -95,9 +100,23 @@ public class OrderController {
      * @return the Order entity with the given ID.
      * @throws OrderNotFoundException if no Order entity with the given ID is found.
      */
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @GetMapping("/order/{id}")
     Order getOrderById(@PathVariable Long id) {
-        return orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+
+        User user = userRepository.findByUsername(currentPrincipalName)
+                .orElseThrow(() -> new UsernameNotFoundException(currentPrincipalName));
+
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException(id));
+
+        if (!order.getUser().getId().equals(user.getId()) && !user.getRoles().stream().anyMatch(role -> role.getName().name().equals("ROLE_ADMIN"))) {
+            throw new AccessDeniedException("You do not have permission to access this order.");
+        }
+
+        return order;
     }
 
     /**
@@ -131,6 +150,7 @@ public class OrderController {
                     order.setBorrowed_at(newOrder.getBorrowed_at());
                     order.setDue_date(newOrder.getDue_date());
                     order.setReturned_at(newOrder.getReturned_at());
+                    order.setPickedUp(newOrder.isPickedUp());
 
                     // Check if the order is overdue
                     if (order.isOverdue()) {

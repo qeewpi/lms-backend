@@ -104,6 +104,11 @@ public class Order {
     @Getter
     private Date returned_at;
 
+    @Setter
+    @Getter
+    @Column(name = "is_picked_up", nullable = false)
+    private boolean isPickedUp = false;
+
     /**
      * Sets the borrowed date of the Order entity and updates the status to BORROWED.
      *
@@ -146,5 +151,9 @@ public class Order {
         // Check if the current date is after the due date
         // If the current date is after the due date, the order is overdue
         return new Date().after(due_date);
+    }
+
+    public void markAsPickedUp() {
+        this.isPickedUp = true;
     }
 }
