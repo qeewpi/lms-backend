@@ -31,6 +31,11 @@
             margin-bottom: 20px;
         }
 
+        .order-submessage {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
         .order-id {
             font-size: 24px;
             font-weight: 600;
@@ -46,13 +51,14 @@
         }
 
         .order-details span {
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .order-summary-title {
-            font-size: 18px;
+            font-size: 12px;
             font-weight: 600;
             margin-bottom: 20px;
+            text-align: center;
         }
 
         .book-item {
@@ -88,6 +94,10 @@
         .book-quantity {
             font-weight: 500;
         }
+
+        .font-bold {
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -99,17 +109,23 @@
                     <span class="order-id">ORDER #<span th:text="${orderId}"></span></span>
                 </div>
 
+                <div class="order-submessage">
+                    <span>Your order is ready for pickup, </span>
+                    <span th:text="${order.user.name}"></span>
+                    <span>! 🥳</span>
+                </div>
+
                 <div class="order-details">
                     <div>
-                        <span class="text-primaryBlack font-bold">Order Status: </span>
+                        <strong class="text-primaryBlack font-bold">Order Status: </strong>
                         <span th:text="${order.status}"></span>
                     </div>
                     <div>
-                        <span class="text-primaryBlack font-bold">Order Date: </span>
+                        <strong class="text-primaryBlack font-bold">Order Date: </strong>
                         <span th:text="${order.borrowed_at}"></span>
                     </div>
                     <div>
-                        <span class="text-primaryBlack font-bold">Due Date: </span>
+                        <strong class="text-primaryBlack font-bold">Due Date: </strong>
                         <span th:text="${order.due_date}"></span>
                     </div>
                 </div>
@@ -120,13 +136,10 @@
 
                 <div th:each="book : ${books}">
                     <div class="book-item">
-                        <img class="book-image" th:src="'data:image/png;base64,' + ${'image_' + book.id}" alt="Book Title"> <!-- Assuming image is attached with content ID "image" -->
+
                         <div class="book-details">
                             <h2 class="book-title" th:text="${book.title}"></h2>
                             <p class="book-author" th:text="${book.author}"></p>
-                        </div>
-                        <div class="book-quantity">
-                            <p>Quantity: 1</p>
                         </div>
                     </div>
                 </div>
