@@ -1,5 +1,6 @@
 package com.it120p.librarymanagementsystem.controller;
 
+import com.it120p.librarymanagementsystem.service.OrderService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +11,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/test")
 public class TestController {
+    private final OrderService orderService;
+
+    public TestController(OrderService orderService) {
+        this.orderService = orderService;
+    }
+
     @GetMapping("/all")
     public String allAccess() {
         return "Public Content.";
@@ -25,5 +32,10 @@ public class TestController {
     @PreAuthorize("hasRole('ADMIN')")
     public String adminAccess() {
         return "Admin Board.";
+    }
+
+    @GetMapping("/testOverdueOrder")
+    public void testOverdueOrder() {
+        orderService.createOverdueOrderForTesting();
     }
 }

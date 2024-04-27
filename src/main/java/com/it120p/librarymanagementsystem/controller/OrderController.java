@@ -88,9 +88,38 @@ public class OrderController {
      *
      * @return the list of all Order entities.
      */
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @GetMapping("/orders")
     Iterable<Order> getAllOrders() {
         return orderRepository.findAll();
+    }
+
+    /**
+     * Retrieves all Order entities associated with a User entity by the user's ID.
+     * If the authenticated user is an admin, they can retrieve orders for any user.
+     * If the authenticated user is a regular user, they can only retrieve their own orders.
+     *
+     * @param userId
+     * @return
+     */
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    @GetMapping("/user/{userId}/orders")
+    public List<Order> getOrdersByUserId(@PathVariable Long userId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+
+        User user = userRepository.findByUsername(currentPrincipalName)
+                .orElseThrow(() -> new UsernameNotFoundException(currentPrincipalName));
+
+        // If the user is not the owner of the orders and does not have the 'ROLE_ADMIN' role, throw an AccessDeniedException
+        if (!user.getId().equals(userId) && !user.getRoles().stream().anyMatch(role -> role.getName().name().equals("ROLE_ADMIN"))) {
+            throw new AccessDeniedException("You do not have permission to access these orders.");
+        }
+
+        // Retrieve the orders for the user
+        List<Order> orders = orderRepository.findByUserId(userId);
+
+        return orders;
     }
 
     /**
@@ -152,8 +181,10 @@ public class OrderController {
                     order.setReturned_at(newOrder.getReturned_at());
                     order.setPickedUp(newOrder.isPickedUp());
 
-                    // Check if the order is overdue
-                    if (order.isOverdue()) {
+                    // Check if the new status is OVERDUE
+                    if (newOrder.getStatus() == OrderStatus.OVERDUE) {
+                        order.setStatus(OrderStatus.OVERDUE);
+                    } else if (order.isOverdue()) {
                         order.setStatus(OrderStatus.OVERDUE);
                     }
 
@@ -178,6 +209,25 @@ public class OrderController {
                 .map(order -> {
                     order.setReturned_at(new Date());
                     order.setStatus(OrderStatus.RETURNED);
+                    return orderRepository.save(order);
+                })
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+    }
+
+    /** Marks an Order entity as overdue.
+     *
+     * @param orderId the ID of the Order entity to be marked as overdue.
+     * @return the updated Order entity.
+     * @throws OrderNotFoundException if no Order entity with the given ID is found.
+     */
+    @PutMapping("/order/overdue/{orderId}")
+    public Order overdueOrder(@PathVariable Long orderId) {
+        return orderRepository.findById(orderId)
+                // Order is mapped to a new Order entity
+                // with the returned_at date set to the current date
+                // to keep track of when the order was returned
+                .map(order -> {
+                    order.setStatus(OrderStatus.OVERDUE);
                     return orderRepository.save(order);
                 })
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
