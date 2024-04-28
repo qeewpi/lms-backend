@@ -7,6 +7,7 @@ import com.it120p.librarymanagementsystem.security.services.impl.EmailServiceImp
 import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,13 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    /**
+     * PasswordEncoder is an interface which provides the encode() method.
+     * It is used to perform one-way encryption on passwords.
+     */
+    @Autowired
+    PasswordEncoder encoder;
 
     /**
      * Creates a new User entity and saves it to the database.
@@ -83,7 +91,7 @@ public class UserController {
                     user.setUsername(newUser.getUsername());
                     user.setName(newUser.getName());
                     user.setEmail(newUser.getEmail());
-                    user.setPassword(newUser.getPassword());
+                    user.setPassword(encoder.encode(newUser.getPassword()));
                     return userRepository.save(user);
                 })
                 .orElseThrow(() -> new UserNotFoundException(id));
