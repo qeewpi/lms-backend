@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <title>Order Summary</title>
     <style>
         /* External CSS for better organization and maintainability */
@@ -88,6 +89,116 @@
         .book-quantity {
             font-weight: 500;
         }
+=======
+
+    <title>Order Summary</title>
+    <style>
+        @font-face {
+           font-family: 'Inter';
+           font-style: normal;
+           font-weight: 100 900;
+           font-display: swap;
+           src: url(https://fonts.gstatic.com/s/inter/v13/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7.woff2) format('woff2');
+           unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+
+         body {
+             font-family: 'Inter', sans-serif;
+             background-color: #f5f5f5; /* Light background color */
+             color: #333;
+         }
+
+         table {
+             width: 600px;
+             margin: 20px auto;
+             border-collapse: collapse;
+         }
+
+         .container {
+             background-color: #fff;
+             border-radius: 10px;
+             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+             padding: 30px;
+         }
+
+         .order-header {
+             text-align: center;
+             margin-bottom: 20px;
+         }
+
+         .order-submessage {
+             text-align: center;
+             margin-bottom: 20px;
+         }
+
+         .order-id {
+             font-size: 24px;
+             font-weight: 600;
+             color: #333;
+         }
+
+         .order-details {
+             display: grid;
+             grid-template-columns: repeat(3, 1fr);
+             gap: 20px;
+             text-align: center;
+             margin-bottom: 20px;
+         }
+
+         .order-summary-title {
+             font-size: 12px;
+             font-weight: 600;
+             margin-bottom: 20px;
+             text-align: center;
+         }
+
+         .book-item {
+             display: flex;
+             align-items: center;
+             padding: 15px;
+             border-bottom: 1px solid #ddd;
+         }
+
+         .book-image {
+             width: 80px;
+             height: 120px;
+             object-fit: cover;
+             border-radius: 5px;
+             margin-right: 20px;
+         }
+
+         .book-details {
+             flex-grow: 1;
+         }
+
+         .book-title {
+             font-size: 16px;
+             font-weight: 600;
+             margin-bottom: 5px;
+         }
+
+         .book-author {
+             font-size: 14px;
+             color: #666;
+         }
+
+         .book-quantity {
+             font-weight: 500;
+         }
+
+         .font-bold {
+             font-weight: 600;
+         }
+
+         .invoice-message {
+             text-align: center;
+             font-size: 12px;
+             padding-left: 2rem;
+             padding-right: 2rem;
+             padding-top: 1rem;
+         }
+
+>>>>>>> origin/main
     </style>
 </head>
 <body>
@@ -99,6 +210,7 @@
                     <span class="order-id">ORDER #<span th:text="${orderId}"></span></span>
                 </div>
 
+<<<<<<< HEAD
                 <div class="order-details">
                     <div>
                         <span class="text-primaryBlack font-bold">Order Status: </span>
@@ -110,6 +222,25 @@
                     </div>
                     <div>
                         <span class="text-primaryBlack font-bold">Due Date: </span>
+=======
+                <div class="order-submessage">
+                    <span>Your order is ready for pickup, </span>
+                    <span th:text="${order.user.name}"></span>
+                    <span>! 🥳</span>
+                </div>
+
+                <div class="order-details">
+                    <div>
+                        <strong class="text-primaryBlack font-bold">Order Status: </strong>
+                        <span th:text="${order.status}"></span>
+                    </div>
+                    <div>
+                        <strong class="text-primaryBlack font-bold">Order Date: </strong>
+                        <span th:text="${order.borrowed_at}"></span>
+                    </div>
+                    <div>
+                        <strong class="text-primaryBlack font-bold">Due Date: </strong>
+>>>>>>> origin/main
                         <span th:text="${order.due_date}"></span>
                     </div>
                 </div>
@@ -120,16 +251,30 @@
 
                 <div th:each="book : ${books}">
                     <div class="book-item">
+<<<<<<< HEAD
                         <img class="book-image" th:src="'data:image/png;base64,' + ${'image_' + book.id}" alt="Book Title"> <!-- Assuming image is attached with content ID "image" -->
+=======
+
+>>>>>>> origin/main
                         <div class="book-details">
                             <h2 class="book-title" th:text="${book.title}"></h2>
                             <p class="book-author" th:text="${book.author}"></p>
                         </div>
+<<<<<<< HEAD
                         <div class="book-quantity">
                             <p>Quantity: 1</p>
                         </div>
                     </div>
                 </div>
+=======
+                    </div>
+                </div>
+
+                <div class="invoice-message">
+                    <p>Thank you for your order! Please note that this email serves as your receipt for picking up your books</p>
+                    <p>If you have any questions or require further assistance, please don't hesitate to contact us.</p>
+                </div>
+>>>>>>> origin/main
             </div>
         </td>
     </tr>
