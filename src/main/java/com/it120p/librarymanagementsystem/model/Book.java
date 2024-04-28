@@ -35,7 +35,9 @@ public class Book {
     private String author;
 
     /** The genre of the book */
-    private String genre;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private EGenre genre;
 
     /** The description of the book
      * The description can hold up to 5000 characters

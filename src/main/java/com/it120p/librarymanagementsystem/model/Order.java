@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -153,6 +155,18 @@ public class Order {
         return new Date().after(due_date);
     }
 
+    /**
+     * Calculates the days remaining of the order till due date
+     */
+    public long getDaysRemaining(){
+        LocalDate dueDateLocal = new java.sql.Date(getDue_date().getTime()).toLocalDate();
+        LocalDate currentDate = LocalDate.now();
+        return ChronoUnit.DAYS.between(currentDate, dueDateLocal);
+    }
+
+    /**
+     * Marks the Order entity as picked up.
+     */
     public void markAsPickedUp() {
         this.isPickedUp = true;
     }

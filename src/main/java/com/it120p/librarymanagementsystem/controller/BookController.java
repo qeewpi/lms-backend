@@ -2,6 +2,7 @@ package com.it120p.librarymanagementsystem.controller;
 
 import com.it120p.librarymanagementsystem.exception.BookNotFoundException;
 import com.it120p.librarymanagementsystem.model.Book;
+import com.it120p.librarymanagementsystem.model.EGenre;
 import com.it120p.librarymanagementsystem.repository.BookRepository;
 import com.it120p.librarymanagementsystem.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The BookController class manages the CRUD operations for Book entities.
@@ -51,11 +53,13 @@ public class BookController {
     public ResponseEntity<?> newBook(@RequestParam("image") MultipartFile file, @RequestParam("title") String title, @RequestParam("author") String author, @RequestParam("genre") String genre, @RequestParam("description") String description) throws IOException {
         // Save the image to the file system
         String imagePath = service.uploadImageToFileSystem(file, title);
+        // Convert the String genre to an EGenre enum
+        EGenre eGenre = EGenre.valueOf(genre.toUpperCase());
         // Create the new Book entity
         Book newBook = Book.builder()
                 .title(title)
                 .author(author)
-                .genre(genre)
+                .genre(eGenre)
                 .description(description)
                 .imagePath(imagePath)
                 .build();
@@ -103,27 +107,39 @@ public class BookController {
     /**
      * Updates a Book entity by its ID in the database.
      *
-     * @param newBook the updated Book entity.
      * @param id the ID of the Book entity.
      * @return the updated Book entity.
      * @throws BookNotFoundException if the Book entity is not found.
      */
-    @PutMapping("/book/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    Book updateBook(@RequestBody Book newBook, @PathVariable Long id) {
-        // Find the Book entity by its ID
-        return bookRepository.findById(id)
-                // If the Book entity is found, update its fields
-                // Use the map method to update the fields of the Book entity
-                .map(book -> {
-                    book.setTitle(newBook.getTitle());
-                    book.setAuthor(newBook.getAuthor());
-                    book.setGenre(newBook.getGenre());
-                    book.setDescription(newBook.getDescription());
-                    book.setImagePath(newBook.getImagePath());
-                    return bookRepository.save(book);
-                })
-                .orElseThrow(() -> new BookNotFoundException(id));
+    @PutMapping("/book/{id}")
+    public ResponseEntity<?> editBook(@PathVariable Long id, @RequestParam(value = "image", required = false) Optional<MultipartFile> file, @RequestParam("title") String title, @RequestParam("author") String author, @RequestParam("genre") String genre, @RequestParam("description") String description) throws IOException {
+        // Find the book by its ID
+        Book bookToUpdate = bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(id));
+
+        String imagePath = bookToUpdate.getImagePath(); // Use the existing image path by default
+
+        // Check if a new image has been provided
+        if (file.isPresent()) {
+            // Save the new image to the file system
+            imagePath = service.uploadImageToFileSystem(file.get(), title);
+        }
+
+        // Convert the String genre to an EGenre enum
+        EGenre eGenre = EGenre.valueOf(genre.toUpperCase());
+
+        // Update the book details
+        bookToUpdate.setTitle(title);
+        bookToUpdate.setAuthor(author);
+        bookToUpdate.setGenre(eGenre);
+        bookToUpdate.setDescription(description);
+        bookToUpdate.setImagePath(imagePath);
+
+        // Save the updated book to the database
+        Book updatedBook = bookRepository.save(bookToUpdate);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(updatedBook);
     }
 
     /**

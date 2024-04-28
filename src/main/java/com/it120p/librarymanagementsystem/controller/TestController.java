@@ -2,10 +2,7 @@ package com.it120p.librarymanagementsystem.controller;
 
 import com.it120p.librarymanagementsystem.service.OrderService;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -34,8 +31,13 @@ public class TestController {
         return "Admin Board.";
     }
 
-    @GetMapping("/testOverdueOrder")
-    public void testOverdueOrder() {
-        orderService.createOverdueOrderForTesting();
+    @GetMapping("/testOverdueOrder/{userId}")
+    public void testOverdueOrder(@PathVariable Long userId) {
+        orderService.createOverdueOrderForTesting(userId);
+    }
+
+    @GetMapping("/testOneDayBeforeDueDate/{userId}")
+    public void testOneDayBeforeDueDate(@PathVariable Long userId) {
+        orderService.createOrderDueInOneDayForTesting(userId);
     }
 }

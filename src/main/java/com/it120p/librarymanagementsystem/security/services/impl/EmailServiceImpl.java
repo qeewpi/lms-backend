@@ -38,7 +38,7 @@ public class EmailServiceImpl implements EmailService {
     public void sendSimpleMailMessage(String to, String subject, String text, String name) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setSubject(NEW_USER_ACCOUNT_CREATED);
+            message.setSubject(subject);
             message.setFrom(fromEmail);
             message.setTo(to);
             message.setText("Hello " + name + ",\n\n" + text + "\n\n" + "Thank you for using our service.\n\n" + "Best Regards,\n" + "Library Management System");
