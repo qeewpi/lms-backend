@@ -1,11 +1,13 @@
 package com.it120p.librarymanagementsystem.controller;
 
 
+import com.it120p.librarymanagementsystem.exception.UserNotFoundException;
 import com.it120p.librarymanagementsystem.model.ERole;
 import com.it120p.librarymanagementsystem.model.Role;
 import com.it120p.librarymanagementsystem.model.User;
 import com.it120p.librarymanagementsystem.payload.request.LoginRequest;
 import com.it120p.librarymanagementsystem.payload.request.SignupRequest;
+import com.it120p.librarymanagementsystem.payload.request.UpdateUserRequest;
 import com.it120p.librarymanagementsystem.payload.response.JwtResponse;
 import com.it120p.librarymanagementsystem.payload.response.MessageResponse;
 import com.it120p.librarymanagementsystem.repository.RoleRepository;
@@ -15,6 +17,7 @@ import com.it120p.librarymanagementsystem.security.services.UserDetailsImpl;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,17 +25,15 @@ import com.it120p.librarymanagementsystem.security.services.impl.EmailServiceImp
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * The AuthController class manages the authentication operations for User entities.
@@ -194,5 +195,26 @@ public class AuthController {
         emailServiceImpl.sendSimpleMailMessage(user.getEmail(), "New User Account Created", "Your account has been created successfully!", user.getName());
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
+
+    /**
+     * Method for updating the user's details like name, email, and password.
+     */
+    @PutMapping("/update/{id}")
+    User updateUser(@RequestBody User newUser, @PathVariable Long id) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!userDetails.getId().equals(id)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only edit your own information");
+        }
+
+        return userRepository.findById(id)
+                .map(user -> {
+                    user.setUsername(newUser.getUsername());
+                    user.setName(newUser.getName());
+                    user.setEmail(newUser.getEmail());
+                    user.setPassword(encoder.encode(newUser.getPassword()));
+                    return userRepository.save(user);
+                })
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 }
