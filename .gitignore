@@ -32,8 +32,3 @@ build/
 ### VS Code ###
 .vscode/
 
-### Uploads Folder Path ###
-**/src/main/java/com/it120p/librarymanagementsystem/service/StorageService.java
-
-### Application Properties ###
-**/src/main/resources/application.properties
