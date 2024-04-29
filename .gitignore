@@ -33,7 +33,7 @@ build/
 .vscode/
 
 ### Uploads Folder Path ###
-storage-service/
+src/main/java/com/it120p/librarymanagementsystem/service/StorageService.java
 
 ### Application Properties ###
-application.properties
+src/main/resources/application.properties
