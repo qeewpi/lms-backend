@@ -34,3 +34,6 @@ build/
 
 ### Uploads Folder Path ###
 storage-service/
+
+### Application Properties ###
+application.properties
