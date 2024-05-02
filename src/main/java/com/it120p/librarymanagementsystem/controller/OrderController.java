@@ -230,6 +230,25 @@ public class OrderController {
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
     }
 
+    /** Marks an Order entity as picked up.
+     *
+     * @param orderId the ID of the Order entity to be marked as picked up.
+     * @return the updated Order entity.
+     * @throws OrderNotFoundException if no Order entity with the given ID is found.
+     */
+    @PutMapping("/order/pickup/{orderId}")
+    public Order pickupOrder(@PathVariable Long orderId) {
+        return orderRepository.findById(orderId)
+                // Order is mapped to a new Order entity
+                // with the returned_at date set to the current date
+                // to keep track of when the order was returned
+                .map(order -> {
+                    order.setPickedUp(true);
+                    return orderRepository.save(order);
+                })
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+    }
+
     /** Marks an Order entity as overdue.
      *
      * @param orderId the ID of the Order entity to be marked as overdue.
@@ -264,5 +283,73 @@ public class OrderController {
         } else {
             throw new OrderNotFoundException(id);
         }
+    }
+
+    /**
+     * Renews an Order entity with the given ID, retaining the same order details but updating the due date.
+     *
+     * @param id the ID of the Order entity to be renewed.
+     * @return the renewed Order entity.
+     */
+    @PutMapping("/order/renew/{id}")
+    Order renewOrder(@PathVariable Long id) {
+        return orderRepository.findById(id)
+                .map(order -> {
+                    order.setDue_date(new Date(System.currentTimeMillis() + 5 * 24 * 60 * 60 * 1000));
+
+                    emailService.sendSimpleMailMessage(
+                        order.getUser().getEmail(),
+                        "Order Renewal",
+                            "Your order with ID: " + order.getId() + " has been renewed.",
+                        order.getUser().getName()
+                    );
+
+                    return orderRepository.save(order);
+                })
+                .orElseThrow(() -> new OrderNotFoundException(id));
+    }
+
+    /**
+     * Renews an Order entity with specific Order ID and Book ID(s) by creating a new order with the same user and specified
+     * book Id(s)
+     * The order is renewed by setting the due date to 5 days from the current date
+     *
+     * @param orderId the ID of the Order entity to be renewed
+     * @param bookId the ID of the Book entity to be renewed
+     */
+    @PostMapping("/order/renew-books/{orderId}")
+    public Order renewOrder(@PathVariable Long orderId, @RequestBody List<Long> bookId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        List<Book> books = bookId.stream()
+                .map(id -> bookRepository.findById(id)
+                        .orElseThrow(() -> new BookNotFoundException(id)))
+                .collect(Collectors.toList());
+
+        Order newOrder = new Order();
+        newOrder.setUser(order.getUser());
+        newOrder.setBooks(books);
+        newOrder.setBorrowed_at(new Date());
+        newOrder.setDue_date(new Date(System.currentTimeMillis() + 5 * 24 * 60 * 60 * 1000));
+        newOrder.setPickedUp(false);
+        newOrder.setStatus(OrderStatus.BORROWED);
+
+        Order savedOrder = orderRepository.save(newOrder);
+
+        List<String> bookTitles = savedOrder.getBooks().stream()
+                .map(Book::getTitle)
+                .collect(Collectors.toList());
+
+        String bookTitlesString = String.join(", ", bookTitles);
+
+        emailService.sendSimpleMailMessage(
+                newOrder.getUser().getEmail(),
+                "Order Renewal",
+                "Your order has been renewed. Your new order ID is: " + savedOrder.getId() + ", with the book(s): " + bookTitlesString + ".",
+                newOrder.getUser().getName()
+        );
+
+        return savedOrder;
     }
 }

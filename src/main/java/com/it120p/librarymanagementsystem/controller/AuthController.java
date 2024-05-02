@@ -109,17 +109,23 @@ public class AuthController {
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
+        // Authenticate the user using the AuthenticationManager
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
+        // Set the authentication in the SecurityContext
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        // Generate a JWT token for the authenticated user
         String jwt = jwtUtils.generateJwtToken(authentication);
 
+        // Get the UserDetailsImpl from the authentication principal
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        // Get the roles of the user
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
+        // Return the JWT response with the token and user details
         return ResponseEntity.ok(new JwtResponse(jwt,
                 userDetails.getId(),
                 userDetails.getUsername(),
@@ -192,7 +198,7 @@ public class AuthController {
         user.setRoles(roles);
         // Save the user to the database
         userRepository.save(user);
-        emailServiceImpl.sendSimpleMailMessage(user.getEmail(), "New User Account Created", "Your account has been created successfully!", user.getName());
+        emailServiceImpl.sendSimpleMailMessage(user.getEmail(), "New User Account Created:" + user.getUsername(), "Your account has been created successfully!", user.getName());
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
@@ -216,5 +222,64 @@ public class AuthController {
                     return userRepository.save(user);
                 })
                 .orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    /**
+     * Method for creating user with specified role and encoded password
+     */
+    @PostMapping("/create")
+    User createUser(@RequestBody User newUser) {
+        // Check if the username is already taken
+        if (userRepository.existsByUsername(newUser.getUsername())) {
+            // Return a bad request response with the message
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error: Username is already taken!");
+        }
+
+        // Check if the email is already in use
+        if (userRepository.existsByEmail(newUser.getEmail())) {
+            // Return a bad request response with the message
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error: Email is already in use!");
+        }
+
+        // Set the roles for the user
+        // use a stream for the roles and map the roles to a set of strings
+        // collect the strings to a set
+        Set<String> strRoles = newUser.getRoles().stream().map(role -> role.getName().toString()).collect(Collectors.toSet());
+        // Create a new HashSet to store the roles
+        Set<Role> roles = new HashSet<>();
+
+        // Check if the roles are null, if they are, then add the ROLE_USER role
+        if (strRoles == null) {
+            Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(userRole);
+        } else {
+            // If the roles are not null, then add the roles to the user
+            strRoles.forEach(role -> {
+                switch (role) {
+                    // If the role is an admin role, then add the ROLE_ADMIN role
+                    case "admin":
+                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(adminRole);
+
+                        break;
+                    case "user":
+                        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(userRole);
+                        break;
+                }
+            });
+        }
+
+        // Set the roles for the user
+        newUser.setRoles(roles);
+
+        // Encode the password using the PasswordEncoder
+        newUser.setPassword(encoder.encode(newUser.getPassword()));
+
+        // Save the user to the database
+        return userRepository.save(newUser);
     }
 }
