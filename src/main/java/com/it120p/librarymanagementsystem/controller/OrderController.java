@@ -19,6 +19,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -295,13 +297,16 @@ public class OrderController {
     Order renewOrder(@PathVariable Long id) {
         return orderRepository.findById(id)
                 .map(order -> {
-                    order.setDue_date(new Date(System.currentTimeMillis() + 5 * 24 * 60 * 60 * 1000));
+                    LocalDateTime now = LocalDateTime.now();
+                    LocalDateTime dueDate = now.plusDays(5);
+                    Date dueDateAsDate = Date.from(dueDate.atZone(ZoneId.systemDefault()).toInstant());
+                    order.setDue_date(dueDateAsDate);
 
                     emailService.sendSimpleMailMessage(
-                        order.getUser().getEmail(),
-                        "Order Renewal",
+                            order.getUser().getEmail(),
+                            "Order Renewal",
                             "Your order with ID: " + order.getId() + " has been renewed.",
-                        order.getUser().getName()
+                            order.getUser().getName()
                     );
 
                     return orderRepository.save(order);
