@@ -99,6 +99,21 @@ public class Order {
         due_date = cal.getTime();
     }
 
+    // The @PreUpdate annotation is used to specify a callback method
+    // that is called before the entity is updated
+    // This is to extend the due date by 5 days when the status is BORROWED
+    @PreUpdate
+    protected void onUpdate() {
+        // Check if the status is BORROWED
+        if (status == OrderStatus.BORROWED) {
+            // If the status is BORROWED, extend the due date by 5 days
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(due_date);
+            cal.add(Calendar.DAY_OF_MONTH, 5);
+            due_date = cal.getTime();
+        }
+    }
+
     @Setter
     @Getter
     private Date due_date;
