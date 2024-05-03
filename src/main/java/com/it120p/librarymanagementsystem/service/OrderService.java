@@ -1,22 +1,29 @@
 package com.it120p.librarymanagementsystem.service;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import com.it120p.librarymanagementsystem.model.Book;
 import com.it120p.librarymanagementsystem.model.Order;
 import com.it120p.librarymanagementsystem.model.OrderStatus;
 import com.it120p.librarymanagementsystem.model.User;
+import com.it120p.librarymanagementsystem.repository.BookRepository;
 import com.it120p.librarymanagementsystem.repository.OrderRepository;
 import com.it120p.librarymanagementsystem.repository.UserRepository;
 import com.it120p.librarymanagementsystem.security.services.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 public class OrderService {
+    @Autowired
+    private BookRepository bookRepository;
+
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
@@ -96,8 +103,15 @@ public class OrderService {
         order.setUser(user);
         order.setBorrowed_at(new Date(System.currentTimeMillis() - 8 * 24 * 60 * 60 * 1000)); // 8 days ago
         order.setDue_date(new Date(System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000)); // 7 days ago
-        order.setStatus(OrderStatus.BORROWED);
+        order.setStatus(OrderStatus.OVERDUE);
+        Book book = bookRepository.findById(25L)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+
+        order.setBooks(Arrays.asList(book));
+
         orderRepository.save(order);
+
+        System.out.println("Order " + order.getId() + " is now overdue.");
     }
 
     /**
