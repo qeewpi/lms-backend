@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -295,10 +296,33 @@ public class OrderController {
      */
     @PutMapping("/order/renew/{id}")
     Order renewOrder(@PathVariable Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+
+        User user = userRepository.findByUsername(currentPrincipalName)
+                .orElseThrow(() -> new UsernameNotFoundException(currentPrincipalName));
+
+        Order orderInfo = orderRepository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException(id));
+
+        if (!orderInfo.getUser().getId().equals(user.getId()) && !user.getRoles().stream().anyMatch(role -> role.getName().name().equals("ROLE_ADMIN"))) {
+            throw new AccessDeniedException("You do not have permission to access this order.");
+        }
+
         return orderRepository.findById(id)
                 .map(order -> {
-                    LocalDateTime now = LocalDateTime.now();
-                    LocalDateTime dueDate = now.plusDays(5);
+                    LocalDateTime existingDueDate = LocalDateTime.ofInstant(order.getDue_date().toInstant(), ZoneId.systemDefault());
+
+                    // Calculate the remaining days to the due date
+                    long remainingDays = ChronoUnit.DAYS.between(LocalDateTime.now(), existingDueDate);
+
+                    // Can comment this out for testing
+                    // If the remaining days are greater than 2, throw an exception
+//                    if (remainingDays > 2) {
+//                        throw new IllegalStateException("Cannot renew order. The remaining days must be less than or equal to 2.");
+//                    }
+
+                    LocalDateTime dueDate = existingDueDate.plusDays(5);
                     Date dueDateAsDate = Date.from(dueDate.atZone(ZoneId.systemDefault()).toInstant());
                     order.setDue_date(dueDateAsDate);
 
@@ -324,19 +348,47 @@ public class OrderController {
      */
     @PostMapping("/order/renew-books/{orderId}")
     public Order renewOrder(@PathVariable Long orderId, @RequestBody List<Long> bookId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+
+        User user = userRepository.findByUsername(currentPrincipalName)
+                .orElseThrow(() -> new UsernameNotFoundException(currentPrincipalName));
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (!order.getUser().getId().equals(user.getId()) && !user.getRoles().stream().anyMatch(role -> role.getName().name().equals("ROLE_ADMIN"))) {
+            throw new AccessDeniedException("You do not have permission to access this order.");
+        }
 
         List<Book> books = bookId.stream()
                 .map(id -> bookRepository.findById(id)
                         .orElseThrow(() -> new BookNotFoundException(id)))
                 .collect(Collectors.toList());
 
+        // Convert existing due date from Date to LocalDateTime
+        LocalDateTime existingDueDate = LocalDateTime.ofInstant(order.getDue_date().toInstant(), ZoneId.systemDefault());
+
+        // Calculate the remaining days to the due date
+        long remainingDays = ChronoUnit.DAYS.between(LocalDateTime.now(), existingDueDate);
+
+        // Can comment this out for testing
+        // If the remaining days are less than 2, throw an exception
+//        if (remainingDays >= 2) {
+//            throw new IllegalStateException("Cannot renew order. The remaining days must be less than or equal to 2.");
+//        }
+
+        // Add 5 days to the existing due date
+        LocalDateTime newDueDate = existingDueDate.plusDays(5);
+
+        // Convert the new due date from LocalDateTime back to Date
+        Date newDueDateAsDate = Date.from(newDueDate.atZone(ZoneId.systemDefault()).toInstant());
+
         Order newOrder = new Order();
         newOrder.setUser(order.getUser());
         newOrder.setBooks(books);
         newOrder.setBorrowed_at(new Date());
-        newOrder.setDue_date(new Date(System.currentTimeMillis() + 5 * 24 * 60 * 60 * 1000));
+        newOrder.setDue_date(newDueDateAsDate);
         newOrder.setPickedUp(false);
         newOrder.setStatus(OrderStatus.BORROWED);
 
